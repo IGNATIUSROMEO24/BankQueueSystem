@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Bank Queue Management System academic project by PS/ITC/24/0290.">
+<title>Bank Queue Management System | PS/ITC/24/0290</title>
+<style>
+:root{--navy:#10243a;--blue:#1769aa;--cyan:#26a6a1;--bg:#f3f6fb;--ink:#172b4d;--muted:#63748b;--line:#e2e8f0;--white:#fff;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(120deg,#10243a,#1769aa);color:#fff;padding:28px 20px 32px}
+.wrap{max-width:1100px;margin:auto}.top{display:flex;align-items:center;gap:14px}.logo{width:48px;height:48px;border-radius:14px;background:#ffffff20;display:grid;place-items:center;font-size:25px}
+h1{font-size:clamp(24px,4vw,34px);margin:0 0 8px}.subtitle{margin:0;color:#d8e7f7;line-height:1.5}.student{display:inline-block;margin-top:16px;padding:8px 12px;border:1px solid #ffffff55;border-radius:999px;font-size:13px;letter-spacing:.3px}
+main{padding:24px 20px 40px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}.stat,.panel{background:var(--white);border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 22px #1e3a5f0a}
+.stat{padding:18px}.stat .label{color:var(--muted);font-size:13px}.stat .num{font-size:30px;font-weight:750;margin-top:6px}
+.grid{display:grid;grid-template-columns: minmax(0,1fr) minmax(0,1.2fr);gap:18px}.panel{padding:22px}.panel h2{font-size:18px;margin:0 0 7px}.help{font-size:13px;color:var(--muted);margin:0 0 18px;line-height:1.5}
+label{display:block;font-size:13px;font-weight:650;margin:13px 0 7px}input{width:100%;padding:12px 13px;border:1px solid #cbd5e1;border-radius:10px;font:inherit;outline:none}input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1769aa18}
+button{border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:650;cursor:pointer;transition:.15s}button:hover{filter:brightness(.96);transform:translateY(-1px)}button:focus-visible{outline:3px solid #72b7ef;outline-offset:2px}
+.primary{background:var(--blue);color:#fff;width:100%;margin-top:15px}.serve{background:var(--cyan);color:#fff}.secondary{background:#eaf1f8;color:#23415f}.danger{background:#fff0ef;color:var(--red)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.actions button{flex:1}
+.queue-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.pill{background:#e9f7f5;color:#087c76;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.queue-list{display:flex;flex-direction:column;gap:9px}.customer{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px}.ticket{width:44px;height:44px;flex-shrink:0;background:#edf4fc;color:var(--blue);border-radius:11px;display:grid;place-items:center;font-weight:800}.customer-name{font-weight:700}.customer-meta{font-size:12px;color:var(--muted);margin-top:4px}.empty{padding:28px 12px;text-align:center;color:var(--muted);background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px}
+.notice{margin-top:18px;padding:13px 15px;border-radius:12px;background:#eef6ff;color:#31577b;font-size:13px;line-height:1.5}.notice strong{color:#173d67}.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px;line-height:1.6}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.stats{gap:9px}.stat{padding:13px}.stat .num{font-size:25px}.panel{padding:18px}}
+@media(max-width:400px){.stats{grid-template-columns:1fr}.top{align-items:flex-start}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top"><div class="logo" aria-hidden="true">🏦</div><div>
+      <h1>Bank Queue Management System</h1>
+      <p class="subtitle">A simple digital queue to organize customers and serve them in order.</p>
+    </div></div>
+    <div class="student">STUDENT INDEX NUMBER: <strong>PS/ITC/24/0290</strong></div>
+  </div>
+</header>
+<main class="wrap">
+  <section class="stats" aria-label="Queue statistics">
+    <div class="stat"><div class="label">Customers waiting</div><div class="num" id="waitingCount">0</div></div>
+    <div class="stat"><div class="label">Customers served</div><div class="num" id="servedCount">0</div></div>
+    <div class="stat"><div class="label">Next ticket</div><div class="num" id="nextTicket">001</div></div>
+  </section>
+  <div class="grid">
+    <section class="panel">
+      <h2>Add a customer</h2>
+      <p class="help">Enter the customer's name. A ticket number will be assigned automatically.</p>
+      <form id="customerForm">
+        <label for="customerName">Customer name</label>
+        <input id="customerName" name="customerName" maxlength="60" placeholder="e.g. Ama Mensah" autocomplete="name" required>
+        <label for="customerService">Service required (optional)</label>
+        <input id="customerService" name="customerService" maxlength="60" placeholder="e.g. Cash deposit">
+        <button class="primary" type="submit">＋ Add customer to queue</button>
+      </form>
+      <div class="actions">
+        <button class="serve" id="serveButton" type="button">Serve next customer</button>
+        <button class="secondary" id="printButton" type="button">Print queue</button>
+      </div>
+      <div class="notice" id="status" role="status" aria-live="polite"><strong>Ready.</strong> Add a customer to begin.</div>
+    </section>
+    <section class="panel">
+      <div class="queue-head"><div><h2>Waiting queue</h2><p class="help" style="margin:5px 0 0">Customers are served in first-in, first-out (FIFO) order.</p></div><span class="pill" id="queuePill">0 waiting</span></div>
+      <div id="queueList" class="queue-list"><div class="empty">No customers are waiting.<br>Add the first customer using the form.</div></div>
+      <div class="actions"><button class="danger" id="resetButton" type="button">Reset demo data</button></div>
+    </section>
+  </div>
+  <div class="footer">Developed for an academic project<br>Student Index Number: PS/ITC/24/0290<br>Queue rule: First In, First Out (FIFO)</div>
+</main>
+<script>
+(() => {
+  const STORAGE_KEY = "bankQueue_PS_ITC_24_0290_v1";
+  let state = { queue: [], served: 0, nextTicket: 1 };
+  const $ = id => document.getElementById(id);
+  function load() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && Array.isArray(saved.queue)) state = {...state, ...saved};
+    } catch (_) {}
+  }
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+  }
+  function ticket(n) { return String(n).padStart(3, "0"); }
+  function announce(message) { $("status").innerHTML = ""; const strong = document.createElement("strong"); strong.textContent = "Update. "; $("status").append(strong, document.createTextNode(message)); }
+  function render() {
+    $("waitingCount").textContent = state.queue.length;
+    $("servedCount").textContent = state.served;
+    $("nextTicket").textContent = ticket(state.nextTicket);
+    $("queuePill").textContent = `${state.queue.length} waiting`;
+    const list = $("queueList"); list.innerHTML = "";
+    if (!state.queue.length) {
+      const empty = document.createElement("div"); empty.className = "empty";
+      empty.append("No customers are waiting."); empty.append(document.createElement("br")); empty.append("Add the first customer using the form."); list.append(empty); return;
+    }
+    state.queue.forEach(person => {
+      const row = document.createElement("div"); row.className = "customer";
+      const badge = document.createElement("div"); badge.className = "ticket"; badge.textContent = ticket(person.ticket);
+      const info = document.createElement("div");
+      const name = document.createElement("div"); name.className = "customer-name"; name.textContent = person.name;
+      const meta = document.createElement("div"); meta.className = "customer-meta"; meta.textContent = `Ticket #${ticket(person.ticket)} · ${person.service || "General banking"}`;
+      info.append(name, meta); row.append(badge, info); list.append(row);
+    });
+  }
+  $("customerForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const name = $("customerName").value.trim();
+    const service = $("customerService").value.trim();
+    if (!name) { announce("Please enter the customer's name."); return; }
+    state.queue.push({ticket: state.nextTicket++, name, service});
+    save(); render(); announce(`${name} has been added to the queue.`);
+    $("customerForm").reset(); $("customerName").focus();
+  });
+  $("serveButton").addEventListener("click", () => {
+    if (!state.queue.length) { announce("The queue is empty. Add a customer first."); return; }
+    const person = state.queue.shift(); state.served++; save(); render();
+    announce(`Ticket #${ticket(person.ticket)} (${person.name}) has been served.`);
+  });
+  $("resetButton").addEventListener("click", () => {
+    if (!confirm("Reset the queue and served count? This cannot be undone.")) return;
+    state = {queue: [], served: 0, nextTicket: 1}; save(); render(); announce("Demo data has been reset.");
+  });
+  $("printButton").addEventListener("click", () => window.print());
+  load(); render();
+})();
+</script>
+</body>
+</html>
